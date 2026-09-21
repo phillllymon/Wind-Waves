@@ -13,6 +13,11 @@ class InputManager {
         console.log('here');
     }
 
+    // used by the on-screen buttons on touch devices
+    setInput(name, value) {
+        this.inputs[name] = value;
+    }
+
     startListening() {
         window.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener('keyup', this.handleKeyUp);

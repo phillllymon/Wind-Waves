@@ -24,6 +24,7 @@ class SternDiagram extends React.Component {
     }
 
     componentDidUpdate() {
+        if (this.props.hidden) return;
         this.drawDiagram();
     }
 
@@ -42,7 +43,10 @@ class SternDiagram extends React.Component {
     drawBoat() {
         let model = this.props.model;
         let boat = model.boat;
-        let ctx = this.ctx;      
+        let ctx = this.ctx;
+        const showLabels = this.props.showLabels;
+        const labelSize = Math.round(12 / Math.max(this.props.scale || 1, 0.6));
+        const label = (text) => (showLabels ? text : undefined);
 
         ctx.translate(150, 300);
         
@@ -132,7 +136,7 @@ class SternDiagram extends React.Component {
         ctx.fill();
 
         //sailor force
-        makeInArrow(ctx, 0.8 * boat.sailorOffset, -40, Math.PI - heelAngle, 60, boat.sailorWeight, 8, 'black');
+        makeInArrow(ctx, 0.8 * boat.sailorOffset, -40, Math.PI - heelAngle, 60, boat.sailorWeight, 8, 'black', label('sailor weight'), labelSize);
         
         ctx.rotate(-1 * heelAngle);
         ctx.translate(0, floatAmt);
@@ -141,26 +145,40 @@ class SternDiagram extends React.Component {
         //heeling forces
         if (boat.tack === 'starboard') {
             let sailHeelForce = model.sailHeelForce;
-            makeInArrow(ctx, -30 + (sideOffset * 1.5), (-1 * boat.sailOffset), -Math.PI / 2, 60, sailHeelForce, 8, 'red');
+            makeInArrow(ctx, -30 + (sideOffset * 1.5), (-1 * boat.sailOffset), -Math.PI / 2, 60, sailHeelForce, 8, 'red', label('sail heel force'), labelSize);
             let boardHeelForce = model.boardHeelForce;
-            makeInArrow(ctx, 30 - sideOffset, boat.boardOffset, Math.PI / 2, 60, boardHeelForce, 8, 'red');
+            makeInArrow(ctx, 30 - sideOffset, boat.boardOffset, Math.PI / 2, 60, boardHeelForce, 8, 'red', label('board heel force'), labelSize);
         }
         else {
             let sailHeelForce = model.sailHeelForce;
-            makeInArrow(ctx, 30 + (sideOffset * 1.5), (-1 * boat.sailOffset), Math.PI / 2, 60, sailHeelForce, 8, 'red');
+            makeInArrow(ctx, 30 + (sideOffset * 1.5), (-1 * boat.sailOffset), Math.PI / 2, 60, sailHeelForce, 8, 'red', label('sail heel force'), labelSize);
             let boardHeelForce = model.boardHeelForce;
-            makeInArrow(ctx, -30 - sideOffset, boat.boardOffset, -Math.PI / 2, 60, boardHeelForce, 8, 'red');
+            makeInArrow(ctx, -30 - sideOffset, boat.boardOffset, -Math.PI / 2, 60, boardHeelForce, 8, 'red', label('board heel force'), labelSize);
         }
 
         //righting forces ALSO SAILOR FORCE ABOVE!!!
         let buoyancyForce = model.buoyancyForce;
-        makeInArrow(ctx, (-1 * boat.buoyancyOffset), -30, 0, 70, buoyancyForce, 8, 'green');
+        makeInArrow(ctx, (-1 * boat.buoyancyOffset), -30, 0, 70, buoyancyForce, 8, 'green', label('buoyancy'), labelSize);
 
         //translate back
         ctx.translate(-150, -300);
     }
 
     render (){
+        if (this.props.mobile) {
+            const scale = this.props.scale || 1;
+            return (
+                <canvas ref="canvas"
+                    width="300px"
+                    height="400px"
+                    style={{
+                        display: 'block',
+                        width: (300 * scale) + 'px',
+                        height: (400 * scale) + 'px'
+                    }}
+                />
+            );
+        }
         return (
             <div>
                 <canvas ref="canvas"

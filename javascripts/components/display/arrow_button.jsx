@@ -46,7 +46,31 @@ class ArrowButton extends React.Component {
 
     colorMenu() {
         let that = this;
-        if (this.state.showColors) {
+        if (this.state.showColors && this.props.large) {
+            //touch layout: swatches sit in their own row under the button
+            return (
+                <div className="colorRowLarge">
+                    {
+                        this.colors.map((color, idx) => {
+                            return (
+                                <div key={idx}
+                                    onClick={() => that.changeColor(color)}
+                                    style={{
+                                        'height': '36px',
+                                        'width': '36px',
+                                        'borderRadius': '18px',
+                                        'margin': '4px 10px 4px 0',
+                                        'border': '1px solid gray',
+                                        'backgroundColor': `${color}`
+                                    }}
+                                />
+                            );
+                        })
+                    }
+                </div>
+            );
+        }
+        else if (this.state.showColors) {
             return (
                 <div style={{'position' : 'relative'}}>
                 <div style={{
@@ -80,6 +104,26 @@ class ArrowButton extends React.Component {
     }
 
     render() {
+        if (this.props.large) {
+            return (
+                <div className="arrowRowLarge">
+                    <div style={{'display': 'flex', 'alignItems': 'center'}}>
+                        <div
+                            className="colorDotLarge"
+                            style={{'backgroundColor': `${this.props.color}`}}
+                            onClick={this.toggleColorMenu}
+                        />
+                        <div
+                            className="arrowButton arrowButtonLarge"
+                            style={this.props.active ? {'backgroundColor' : this.props.color} : {}}
+                            id={this.props.arrow}
+                            onClick={this.props.toggleArrow}
+                        >{this.forceLabels[this.props.arrow]}</div>
+                    </div>
+                    {this.colorMenu()}
+                </div>
+            );
+        }
         return (
             <div style={{'display' : 'flex'}}>
                 <div 

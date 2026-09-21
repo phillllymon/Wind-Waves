@@ -15,6 +15,12 @@ class WindMap {
         this.waves = this.generateWaves();
     }
 
+    resize(width, height) {
+        this.width = width;
+        this.height = height;
+        this.waves = this.generateWaves();
+    }
+
     generateWaves() {
         // let numCols = this.width/15;
         // let numRows = this.height/15;

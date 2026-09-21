@@ -1,5 +1,6 @@
 import React from 'react';
 import ArrowButton from './arrow_button';
+import MobileControls from './mobile_controls';
 import {
     getUnitVector,
     vectorMag
@@ -13,9 +14,6 @@ import {
 class MainDisplay extends React.Component {
     constructor(props) {
         super(props);
-        this.width = 1200;
-        this.height = 800;
-
         this.arrows = {
             appWind: true,
             sailLift: false,
@@ -47,6 +45,76 @@ class MainDisplay extends React.Component {
         this.state = {
             intro: 1
         };
+    }
+
+    get width() {
+        return this.props.width || 1200;
+    }
+
+    get height() {
+        return this.props.height || 800;
+    }
+
+    // canvases on high-density phone screens are drawn at up to 2x for crispness
+    pixelRatio() {
+        return this.props.mobile ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    }
+
+    mobileIntroPopup() {
+        if (this.state.intro === 1) {
+            return (
+                <div className="intro intro_mobile">
+                    <center>
+                        Welcome to Wind & Waves!
+                        <br />
+                        <br />
+                        Sail your boat with the buttons at the bottom:
+                        <br />
+                        -steer port or starboard on the left
+                        <br />
+                        -let your sail out or pull it in on the right
+                        <br />
+                        <br />
+                        <button
+                            className="intro_button"
+                            onClick={() => this.setState({ intro: 2 })}
+                        >
+                            OK, got it
+                        </button>
+                    </center>
+                </div>
+            );
+        }
+        if (this.state.intro === 2) {
+            return (
+                <div className="intro intro_mobile">
+                    <center>
+                        Use the buttons along the top:
+                        <br />
+                        <br />
+                        <b>Forces</b>: tap a force to toggle its arrow, tap its colored circle to set that arrow's color
+                        <br />
+                        <br />
+                        <b>Follow</b>: keep the view centered on your boat while the sea moves past
+                        <br />
+                        <br />
+                        <b>Views</b>: slide down the top-down and stern views. Drag the bottom edge to resize, tap Views again to hide
+                        <br />
+                        <br />
+                        <button
+                            className="intro_button"
+                            onClick={() => {
+                                this.setState({ intro: false });
+                                this.centerBoat();
+                            }}
+                        >
+                            OK, sail now
+                        </button>
+                    </center>
+                </div>
+            );
+        }
+        return null;
     }
 
     introPopup() {
@@ -132,8 +200,10 @@ class MainDisplay extends React.Component {
     }
 
     clearDisplay() {
+        const ratio = this.pixelRatio();
+        this.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         this.ctx.fillStyle = 'darkblue';
-        this.ctx.fillRect(0, 0, 1200, 800);
+        this.ctx.fillRect(0, 0, this.width, this.height);
     }
 
     drawModel() {
@@ -149,9 +219,24 @@ class MainDisplay extends React.Component {
         let windMap = this.props.windMap;
         let ctx = this.ctx;
 
+        //when following, the boat stays at the center and the sea slides past it
+        const follow = this.props.followBoat;
+        const shiftX = this.width / 2 - pos[0];
+        const shiftY = this.height / 2 - pos[1];
+        const wrap = (value, size) => ((value % size) + size) % size;
+        const drawPos = follow ? [this.width / 2, this.height / 2] : pos;
+
         //display waves
         windMap.waves.forEach( (row) => {
-            row.forEach( (wave) => {
+            row.forEach( (waveInWorld) => {
+                //the sea repeats every screen, so the waves never run out however far the boat sails
+                const wave = follow ? {
+                    pos: [
+                        wrap(waveInWorld.pos[0] + shiftX, windMap.width),
+                        wrap(waveInWorld.pos[1] + shiftY, windMap.height)
+                    ],
+                    stage: waveInWorld.stage
+                } : waveInWorld;
                 ctx.strokeStyle = 'blue';
                 // if (wave.stage > 8){
                 //     ctx.strokeStyle = 'lightblue';
@@ -172,7 +257,7 @@ class MainDisplay extends React.Component {
         });
 
         //orient to boat
-        ctx.translate(pos[0], pos[1]);
+        ctx.translate(drawPos[0], drawPos[1]);
         ctx.rotate(dir);
 
         //streamRipples
@@ -207,13 +292,25 @@ class MainDisplay extends React.Component {
         ctx.lineTo(boomEndpoint[0], boomEndpoint[1]);
         ctx.stroke();
 
-        drawForceArrows(ctx, 0, 0, this.arrows, model, boat, this.arrowColors);
+        const labels = this.props.showLabels ? { size: this.props.mobile ? 13 : 12 } : null;
+        drawForceArrows(ctx, 0, 0, this.arrows, model, boat, this.arrowColors, labels);
 
         ctx.rotate(-dir);
-        ctx.translate(-(pos[0]), -(pos[1]));
+        ctx.translate(-(drawPos[0]), -(drawPos[1]));
 
         //display true wind
-        makeInArrow(ctx, 600, 170, Math.PI, 100, 100, 10, 'lightblue');
+        if (this.props.mobile) {
+            //top right corner, clear of the controls
+            const x = this.width - 60;
+            makeInArrow(ctx, x, 190, Math.PI, 100, 100, 10, 'lightblue');
+            ctx.fillStyle = 'lightblue';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('TRUE WIND', x, 115);
+        }
+        else {
+            makeInArrow(ctx, this.width / 2, 170, Math.PI, 100, 100, 10, 'lightblue');
+        }
 
     }
 
@@ -227,6 +324,14 @@ class MainDisplay extends React.Component {
                 <button
                     style={{ 'position': 'fixed', 'top': '30', 'left': '440' }}
                     onClick={() => this.setState({intro: 1})}>see intro again
+                </button>
+                <button
+                    style={{ 'position': 'fixed', 'top': '30', 'left': '570' }}
+                    onClick={this.props.onToggleLabels}>label forces: {this.props.showLabels ? 'on' : 'off'}
+                </button>
+                <button
+                    style={{ 'position': 'fixed', 'top': '30', 'left': '710' }}
+                    onClick={this.props.onToggleFollow}>follow boat: {this.props.followBoat ? 'on' : 'off'}
                 </button>
                 <div
                     style={{
@@ -266,13 +371,48 @@ class MainDisplay extends React.Component {
     }
 
     render() {
+        const ratio = this.pixelRatio();
+        const canvas = (
+            <canvas ref="canvas"
+                width={this.width * ratio}
+                height={this.height * ratio}
+                style={this.props.mobile ? {
+                    display: 'block',
+                    width: this.width + 'px',
+                    height: this.height + 'px'
+                } : undefined}
+            />
+        );
+
+        if (this.props.mobile) {
+            return (
+                <div className="mobile_display">
+                    {canvas}
+                    <MobileControls
+                        model={this.props.model}
+                        showLabels={this.props.showLabels}
+                        onToggleLabels={this.props.onToggleLabels}
+                        followBoat={this.props.followBoat}
+                        onToggleFollow={this.props.onToggleFollow}
+                        viewportWidth={this.width}
+                        viewportHeight={this.height}
+                        inputManager={this.props.inputManager}
+                        arrows={this.arrows}
+                        arrowColors={this.arrowColors}
+                        toggleArrow={this.toggleArrow}
+                        setArrowColor={this.setArrowColor}
+                        centerBoat={this.centerBoat}
+                        showIntro={() => this.setState({ intro: 1 })}
+                    />
+                    {this.mobileIntroPopup()}
+                </div>
+            );
+        }
+
         return (
             <div>
                 {this.mainControls()}
-                <canvas ref="canvas"
-                    width="1200px"
-                    height="800px"
-                />
+                {canvas}
             </div>
         );
     }

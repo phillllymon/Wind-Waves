@@ -4,16 +4,15 @@
   "description": "sailing simulator",
   "main": "webpack.config.js",
   "dependencies": {
-    "@babel/core": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
-    "@babel/preset-react": "^7.0.0",
-    "babel-loader": "^8.0.6",
-    "react": "^16.10.1",
-    "react-dom": "^16.10.1",
-    "webpack": "^4.41.0",
-    "webpack-cli": "^3.3.9"
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "@babel/preset-react": "^7.29.7",
+    "babel-loader": "^9.2.1",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "webpack": "^5.111.1",
+    "webpack-cli": "^5.1.4"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack --watch --mode=development"

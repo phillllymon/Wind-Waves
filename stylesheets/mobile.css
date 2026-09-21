@@ -1,0 +1,336 @@
+/* Touch layout: only used when the app adds .mobile to <body> (phones and tablets). */
+
+body.mobile {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background-color: darkblue;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile_root {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    /* no pinch or double-tap zoom, scrolling stays available to children that ask for it */
+    touch-action: pan-x pan-y;
+}
+
+.mobile_display {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.mobile_controls {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    /* let touches through to the canvas except on the controls themselves */
+    pointer-events: none;
+    font-family: sans-serif;
+}
+
+.mobile_controls button,
+.mobile_panel,
+.mobile_popover,
+.mobile_views.open {
+    pointer-events: auto;
+}
+
+/* top bar */
+
+.mobile_top_bar {
+    position: absolute;
+    top: calc(8px + env(safe-area-inset-top));
+    left: calc(8px + env(safe-area-inset-left));
+    display: flex;
+}
+
+.mobile_bar_button {
+    min-width: 44px;
+    height: 44px;
+    margin-right: 8px;
+    padding: 0px 10px;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.85);
+    touch-action: manipulation;
+}
+
+.mobile_help {
+    position: absolute;
+    top: calc(8px + env(safe-area-inset-top));
+    right: calc(8px + env(safe-area-inset-right));
+    margin-right: 0px;
+}
+
+.mobile_bar_button.active {
+    font-weight: bold;
+    background-color: white;
+    border-color: lightblue;
+}
+
+/* views drawer: slides down from the top, drag the bottom edge to resize */
+
+.mobile_views {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    padding-top: calc(60px + env(safe-area-inset-top));
+    background-color: rgba(0, 0, 60, 0.9);
+    border-radius: 0px 0px 12px 12px;
+    transform: translateY(-100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.mobile_views.open {
+    transform: translateY(0%);
+    visibility: visible;
+    transition: transform 0.25s ease, visibility 0s;
+}
+
+.mobile_views_body {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.mobile_views_body > * {
+    margin: 0px 6px;
+}
+
+.mobile_views_column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mobile_views_forces {
+    margin: 8px 0px 0px 0px;
+}
+
+.mobile_views_handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    touch-action: none;
+}
+
+.mobile_views_grip {
+    width: 48px;
+    height: 5px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* the top view's arrow toggles, over the right-hand side of the drawer */
+.mobile_popover {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: min(290px, 60%);
+    margin: 0px;
+    padding: 6px 10px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* sideways: stop short of the sail buttons, so it covers the stern view (no toggles) and not the top view */
+@media (orientation: landscape) {
+    .mobile_popover {
+        right: calc(140px + env(safe-area-inset-right));
+    }
+}
+
+/* forces panel */
+
+.mobile_panel {
+    position: absolute;
+    top: calc(60px + env(safe-area-inset-top));
+    left: calc(8px + env(safe-area-inset-left));
+    padding: 6px 10px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.92);
+}
+
+/* sideways: a column down the left edge, so the boat in the middle stays visible */
+@media (orientation: landscape) {
+    .mobile_panel {
+        width: 290px;
+        max-height: calc(100% - 60px - 100px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
+}
+
+/* upright: a strip across the top, above the boat */
+@media (orientation: portrait) {
+    .mobile_panel {
+        right: calc(8px + env(safe-area-inset-right));
+        max-height: calc(40% - 60px);
+    }
+}
+
+.arrowRowLarge {
+    padding: 4px 0px;
+}
+
+.colorDotLarge {
+    flex-shrink: 0;
+    height: 36px;
+    width: 36px;
+    margin-right: 10px;
+    border-radius: 18px;
+    border: 1px solid gray;
+}
+
+.arrowButtonLarge {
+    flex-grow: 1;
+    padding: 10px 8px;
+    font-size: 16px;
+    touch-action: manipulation;
+}
+
+.labelToggle {
+    margin-left: 46px;   /* lines up with the force names below */
+}
+
+.labelToggle.active {
+    font-weight: bold;
+    background-color: #ffe98a;
+}
+
+.colorRowLarge {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 2px 0px 6px 0px;
+}
+
+/* steering and sail buttons */
+
+.mobile_drive {
+    position: absolute;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    display: flex;
+}
+
+.mobile_drive_left {
+    left: calc(12px + env(safe-area-inset-left));
+}
+
+.mobile_drive_right {
+    right: calc(12px + env(safe-area-inset-right));
+    flex-direction: column-reverse;
+}
+
+.hold_button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 112px;
+    height: 84px;
+    margin: 4px;
+    padding: 0px;
+    font-family: sans-serif;
+    color: black;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.4);
+    touch-action: none;
+    -webkit-touch-callout: none;
+}
+
+.hold_button.pressed {
+    background-color: rgba(255, 255, 255, 0.85);
+}
+
+.hold_icon {
+    font-size: 26px;
+    line-height: 30px;
+}
+
+.hold_label {
+    font-size: 14px;
+}
+
+/* intro popup on small screens */
+
+.intro.intro_mobile {
+    box-sizing: border-box;
+    width: 90%;
+    max-width: 420px;
+    max-height: 90%;
+    overflow-y: auto;
+    padding: 18px;
+    font-size: 17px;
+    line-height: 1.35;
+    border-radius: 8px;
+    z-index: 10;
+}
+
+.intro_mobile .intro_button {
+    margin-top: 4px;
+    padding: 8px 14px;
+    font-size: 18px;
+}
+
+/* short screens (phones held sideways) */
+@media (max-height: 450px) {
+    .hold_button {
+        width: 96px;
+        height: 64px;
+    }
+
+    .hold_icon {
+        font-size: 20px;
+        line-height: 22px;
+    }
+}
+
+/* narrow phones (about 360px wide): keep the button clusters from running into each other */
+@media (max-width: 399px) {
+    .hold_button {
+        width: 96px;
+    }
+
+    .mobile_bar_button {
+        padding: 0px 7px;
+    }
+}
+
+@media (max-width: 340px) {
+    .hold_button {
+        width: 84px;
+    }
+
+    .mobile_bar_button {
+        padding: 0px 5px;
+        font-size: 14px;
+    }
+}

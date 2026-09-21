@@ -62,6 +62,8 @@ class TopDiagram extends React.Component {
     }
 
     componentDidUpdate() {
+        //the mobile drawer keeps this mounted while closed, no need to paint it
+        if (this.props.hidden) return;
         this.drawDiagram();
     }
 
@@ -101,7 +103,9 @@ class TopDiagram extends React.Component {
         ctx.arc(150, 115, 3, 0, 2 * Math.PI, true);
         ctx.fill();
         
-        drawForceArrows(ctx, 150, 150, this.arrows, model, boat, this.arrowColors);
+        //keep label text a readable size when the mobile drawer shrinks this canvas
+        const labels = this.props.showLabels ? { size: Math.round(12 / Math.max(this.props.scale || 1, 0.6)) } : null;
+        drawForceArrows(ctx, 150, 150, this.arrows, model, boat, this.arrowColors, labels);
 
         //sheetAngleIndicator
         let sheetAngle = toRadians(boat.mainSheetPos);
@@ -168,6 +172,21 @@ class TopDiagram extends React.Component {
     }
 
     render (){
+        if (this.props.mobile) {
+            //the drawer shows the arrow toggles itself
+            const scale = this.props.scale || 1;
+            return (
+                <canvas ref="canvas"
+                    width="300px"
+                    height="300px"
+                    style={{
+                        display: 'block',
+                        width: (300 * scale) + 'px',
+                        height: (300 * scale) + 'px'
+                    }}
+                />
+            );
+        }
         return (
             <div style={{'width' : '300px'}}>
                 <canvas ref="canvas"
